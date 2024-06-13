@@ -8,11 +8,19 @@ export type PasswordRequestParams = {
 }
 
 
-export type TransformPdfResult = {
+export type PdfInstance = {
   pdf: PDFDocumentProxy | null,
   task: PDFDocumentLoadingTask | null,
-} | undefined
+}
 
+
+export type ToolBar = {
+  download?: boolean
+  scale?: boolean
+  page?: boolean
+  print?: boolean
+  viewThumbnail?: boolean
+}
 
 export interface PdfProps {
   /**
@@ -37,14 +45,6 @@ export interface PdfProps {
    */
   page?: number
   /**
-   * Desired page rotation angle.
-   */
-  rotation?: number
-  /**
-   * Desired ratio of canvas size to document size.
-   */
-  scale?: number
-  /**
    * Source of the document to display.
    */
   source: Source
@@ -59,9 +59,5 @@ export interface PdfProps {
   /**
    * toolbar
    */
-  toolbar?: boolean
-  /**
-   * sidebar
-   */
-  sidebar?: boolean
+  toolbar?: boolean | ToolBar
 }

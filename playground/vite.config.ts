@@ -31,5 +31,16 @@ export default defineConfig({
         ws: true
       }
     }
-  }
+  },
+  css: {
+    preprocessorOptions: {
+      css: {
+        charset: true
+      },
+      less: {
+        javascriptEnabled: true,
+        charset: true
+      }
+    }
+  },
 })
