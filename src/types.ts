@@ -24,34 +24,17 @@ export type ToolBar = {
 
 export interface PdfProps {
   /**
-   * Whether to enable an annotation layer.
+   * Source of the document to display.
    */
-  annotationLayer?: boolean
-  /**
-   * Desired page height.
-   */
-  height?: number
-  /**
-   * Root element identifier (inherited by page containers with page number
-   * postfixes).
-   */
-  id?: string
-  /**
-   * Path for annotation icons, including trailing slash.
-   */
-  imageResourcesPath?: string
+  source: Source
   /**
    * Number of the page to display.
    */
   page?: number
   /**
-   * Source of the document to display.
+   * Desired page height.
    */
-  source: Source
-  /**
-   * Whether to enable a text layer.
-   */
-  textLayer?: boolean
+  height?: number
   /**
    * Desired page width.
    */

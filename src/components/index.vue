@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import type { PdfProps, PdfInstance } from '../types';
 import { usePdfViewer } from '../pdf'
-import { watch, ref, onUnmounted, toRaw, reactive, computed } from 'vue'
+import { watch, ref, onUnmounted, toRaw, reactive, computed, onMounted } from 'vue'
 import type { OnProgressParameters, PDFDocumentProxy } from 'pdfjs-dist';
+import { isInViewport, throttle } from '../utils';
 
 const props = withDefaults(defineProps<PdfProps>(), {
     source: '',
@@ -32,6 +33,7 @@ const { transform, clear, render, download, print } = usePdfViewer({
 
     },
 })
+
 const pdfInstance = ref<PdfInstance>()
 const info = reactive({
     total: 0,
@@ -96,8 +98,33 @@ const printHandler = () => {
 }
 
 
+const scrollContainer = ref<HTMLElement>()
+
+const scrollHandler = throttle(() => {
+    console.log(info.total);
+
+    if (info.total) {
+        for (let i = 1; i <= info.total; i++) {
+            const flag = isInViewport(i.toString())
+            if (flag) {
+                continue
+            }
+            info.page = i
+            break
+        }
+    }
+}, 200)
+onMounted(() => {
+    if (scrollContainer.value) {
+        scrollContainer.value.addEventListener('scroll', scrollHandler)
+    }
+})
+
 onUnmounted(() => {
     clear(pdfInstance.value)
+    if (scrollContainer.value) {
+        scrollContainer.value.removeEventListener('scroll', scaleHandler)
+    }
 })
 </script>
 
@@ -106,9 +133,9 @@ onUnmounted(() => {
         <section class="pdf-mask">
             <header class="pdf-header">
                 <span @click="toggleThumbnail">缩略图切换</span>
-                <span @click="() => navigateTo(1)">上一页</span>
-                <span @click="() => navigateTo(2)">下一页</span>
-                <span @click="() => navigateTo(3)">跳转</span>
+                <span @click="navigateTo(1)">上一页</span>
+                <span @click="navigateTo(2)">下一页</span>
+                <span @click="navigateTo(3)">跳转</span>
                 <span @click="scaleHandler">放大</span>
                 <span @click="scaleHandler">缩小</span>
                 <span @click="downloadHandler()">下载</span>
@@ -119,7 +146,7 @@ onUnmounted(() => {
                     width: !info.thumbnail ? 0 : '180px',
                     transition: 'all .2s'
                 }" v-if="toolbar.viewThumbnail"></section>
-                <section class="pdf-content-container"></section>
+                <section class="pdf-content-container" ref="scrollContainer"></section>
             </section>
         </section>
     </main>
@@ -175,19 +202,17 @@ body {
             height: 100%;
             overflow-y: auto;
 
-        }
+            .pdf-thumb-item {
+                margin: 4px 0 !important;
+                cursor: pointer;
 
-        .pdf-thumb-item {
-            margin: 4px 0 !important;
-            cursor: pointer;
-
-            &:hover {
-                outline: #ccc solid 6px;
+                &:hover {
+                    outline: #ccc solid 6px;
+                }
             }
         }
 
         .pdf-content-container {
-            padding: 4px 0;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -195,6 +220,12 @@ body {
             background-color: #fff;
             height: 100%;
             overflow-y: auto;
+
+
+            .pdf-page-item {
+                margin: 4px 0;
+                box-shadow: 0 0 10px 2px #ddd;
+            }
         }
     }
 }

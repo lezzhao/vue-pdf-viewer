@@ -90,7 +90,7 @@ export function usePdfViewer(options?: {
     }
     if (task?.onProgress) {
       // @ts-expect-error: onProgress must be reset
-      task.value.onProgress = null
+      task.onProgress = null
     }
     pdf?.destroy()
   }
