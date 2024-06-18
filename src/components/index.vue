@@ -1,15 +1,29 @@
 <script setup lang="ts">
 import type { PdfProps, PdfInstance } from '../types';
 import { usePdfViewer } from '../pdf'
-import { watch, ref, onUnmounted, toRaw, reactive, computed, onMounted } from 'vue'
+import { watch, ref, onUnmounted, reactive, computed, onMounted, shallowRef } from 'vue'
 import type { OnProgressParameters, PDFDocumentProxy } from 'pdfjs-dist';
-import { isInViewport, throttle } from '../utils';
+import { isSlidePast, debounce } from '../utils';
 
 const props = withDefaults(defineProps<PdfProps>(), {
     source: '',
-    password: '',
     scale: 1,
     toolbar: true,
+})
+
+const toolbar = computed(() => {
+    if (props.toolbar === false) return {
+        download: false,
+        scale: false,
+        print: false,
+        viewThumbnail: false,
+    }
+    return props.toolbar === true ? {
+        download: true,
+        scale: true,
+        print: true,
+        viewThumbnail: true,
+    } : props.toolbar
 })
 
 const emit = defineEmits<{
@@ -19,22 +33,25 @@ const emit = defineEmits<{
     (e: 'rendered'): void
 }>()
 
+const pwdInfo = ref({
+    visible: false,
+    pwd: ''
+})
 const { transform, clear, render, download, print } = usePdfViewer({
     onError: (e) => {
         info.total = 0
         emit('failed', { type: 'load-error', error: e })
     },
     onPasswordRequest({ callback, isWrongPassword }) {
-        console.log('onPasswordRequest', callback, isWrongPassword);
-
+        pwdInfo.value = {
+            visible: true,
+            pwd: ''
+        }
     },
-    onProgress: (progressParams) => {
-        emit('progress', progressParams)
-
-    },
+    onProgress: (progressParams) => emit('progress', progressParams),
 })
 
-const pdfInstance = ref<PdfInstance>()
+const pdfInstance = shallowRef<PdfInstance>()
 const info = reactive({
     total: 0,
     page: 1,
@@ -42,27 +59,26 @@ const info = reactive({
     thumbnail: false,
 })
 
-const toolbar = computed(() => {
-    if (props.toolbar === false) return {
-        download: false,
-        scale: false,
-        page: false,
-        print: false,
-        viewThumbnail: false,
+const clickHandler = async () => {
+    let source: any = {
+        url: '',
+        password: ''
     }
-    return props.toolbar === true ? {
-        download: true,
-        scale: true,
-        page: true,
-        print: true,
-        viewThumbnail: true,
-    } : props.toolbar
-})
+    if (typeof props.source === 'string') {
+        source.url = props.source
+        source.password = pwdInfo.value.pwd
+    } else {
+        source = Object.assign({ password: pwdInfo.value.pwd }, props.source)
+    }
+    pdfInstance.value = await transform(source)
+    await renderHandler()
+    pwdInfo.value.visible = false
+}
 
 const renderHandler = async () => {
     if (!pdfInstance.value?.pdf) return
     try {
-        const pdf = toRaw(pdfInstance.value.pdf)
+        const pdf = pdfInstance.value.pdf
         info.total = pdf.numPages
         const contents = await render(pdf)
         if (toolbar.value?.viewThumbnail) {
@@ -81,41 +97,55 @@ watch(() => props.source, async val => {
         pdfInstance.value = await transform(val)
         renderHandler()
     }
-}, { immediate: true })
+}, { immediate: true, deep: true })
 
 const toggleThumbnail = () => {
     info.thumbnail = !info.thumbnail
+    if (info.thumbnail)
+        highlightThumbItem(info.page)
 }
 
-const scaleHandler = () => { }
+const scaleHandler = async (increase: boolean) => {
+    const increaseNum = increase ? 0.25 : -0.25
+    info.scale = info.scale + increaseNum
+    const contents = await render(pdfInstance.value?.pdf as PDFDocumentProxy, { scale: info.scale })
+    document.querySelector('.pdf-content-container')!.innerHTML = ''
+    document.querySelector('.pdf-content-container')!.appendChild(contents)
+}
 const downloadHandler = (filename?: string) => {
     if (!pdfInstance.value?.pdf) return
-    download(toRaw(pdfInstance.value?.pdf), filename)
+    download(pdfInstance.value?.pdf, filename)
 }
 const printHandler = () => {
     if (!pdfInstance.value?.pdf) return
-    print(toRaw(pdfInstance.value?.pdf))
+    print(pdfInstance.value?.pdf)
 }
 
-
 const scrollContainer = ref<HTMLElement>()
-
-const scrollHandler = throttle(() => {
-    console.log(info.total);
-
+const highlightThumbItem = (page: number) => {
+    document.querySelector('.pdf-thumb-item.active')?.classList.remove('active')
+    const target = document.querySelector(`[data-t_page="${page}"]`)
+    if (target) {
+        target.classList.add('active')
+        target.scrollIntoView({ behavior: 'auto', block: 'center' })
+    }
+}
+const scrollHandler = debounce(() => {
     if (info.total) {
         for (let i = 1; i <= info.total; i++) {
-            const flag = isInViewport(i.toString())
+            const flag = isSlidePast(i.toString())
             if (flag) {
                 continue
             }
             info.page = i
             break
         }
+        highlightThumbItem(info.page)
     }
-}, 200)
+}, 500)
+
 onMounted(() => {
-    if (scrollContainer.value) {
+    if (scrollContainer.value && toolbar.value?.viewThumbnail) {
         scrollContainer.value.addEventListener('scroll', scrollHandler)
     }
 })
@@ -123,31 +153,41 @@ onMounted(() => {
 onUnmounted(() => {
     clear(pdfInstance.value)
     if (scrollContainer.value) {
-        scrollContainer.value.removeEventListener('scroll', scaleHandler)
+        scrollContainer.value.removeEventListener('scroll', scrollHandler)
     }
 })
 </script>
 
 <template>
     <main class="pdf-container">
-        <section class="pdf-mask">
-            <header class="pdf-header">
-                <span @click="toggleThumbnail">缩略图切换</span>
-                <span @click="navigateTo(1)">上一页</span>
-                <span @click="navigateTo(2)">下一页</span>
-                <span @click="navigateTo(3)">跳转</span>
-                <span @click="scaleHandler">放大</span>
-                <span @click="scaleHandler">缩小</span>
-                <span @click="downloadHandler()">下载</span>
-                <span @click="printHandler">打印</span>
-            </header>
-            <section class="pdf-main-container">
-                <section class="pdf-thumbs-container" :style="{
-                    width: !info.thumbnail ? 0 : '180px',
-                    transition: 'all .2s'
-                }" v-if="toolbar.viewThumbnail"></section>
-                <section class="pdf-content-container" ref="scrollContainer"></section>
-            </section>
+        <section class="pdf-mask" :style="pwdInfo.visible && {
+            background: 'rgba(0, 0, 0, 0.6)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+        }">
+            <template v-if="info.total">
+                <header class="pdf-header">
+                    <span @click="toggleThumbnail">缩略图切换</span>
+                    <span @click="scaleHandler(true)">放大</span>
+                    <span @click="scaleHandler(false)">缩小</span>
+                    <span @click="downloadHandler()">下载</span>
+                    <span @click="printHandler">打印</span>
+                </header>
+                <section class="pdf-main-container">
+                    <section class="pdf-thumbs-container" :style="{
+                        width: !info.thumbnail ? 0 : '180px',
+                        transition: 'all .2s'
+                    }" v-if="toolbar.viewThumbnail"></section>
+                    <section class="pdf-content-container" ref="scrollContainer"></section>
+                </section>
+            </template>
+            <template v-if="pwdInfo.visible">
+                <div class="pwd-container">
+                    <input type="password" placeholder="please type password" v-model="pwdInfo.pwd" >
+                    <button @click="clickHandler">confirm</button>
+                </div>
+            </template>
         </section>
     </main>
 </template>
@@ -209,6 +249,10 @@ body {
                 &:hover {
                     outline: #ccc solid 6px;
                 }
+
+                &.active {
+                    outline: #ccc solid 6px;
+                }
             }
         }
 
@@ -219,13 +263,49 @@ body {
             flex: 1;
             background-color: #fff;
             height: 100%;
-            overflow-y: auto;
+            overflow: auto;
 
 
             .pdf-page-item {
                 margin: 4px 0;
                 box-shadow: 0 0 10px 2px #ddd;
             }
+        }
+    }
+
+    .pwd-container {
+        background-color: #fff;
+        padding: 20px 12px;
+        border-radius: 5px;
+        display: flex;
+        flex-direction: column;
+        justify-content: end;
+        align-items: end;
+
+        input {
+            width: 320px;
+            height: 30px;
+            border: none;
+            outline: none;
+            border-bottom: 2px solid #2278f9;
+
+            &::placeholder {
+                font-size: 14px;
+                color: #aaa;
+            }
+        }
+
+        button {
+            background-color: #2278f9;
+            color: white;
+            border: none;
+            font-size: 14px;
+            outline: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            margin-top: 10px;
+            cursor: pointer;
+            float: right;
         }
     }
 }

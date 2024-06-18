@@ -77,20 +77,19 @@ export function releaseChildCanvases(el?: HTMLElement) {
   })
 }
 
-export function isInViewport(id: string) {
+export function isSlidePast(id: string) {
   const curEl = document.querySelector(`[data-page="${id}"]`) as HTMLElement
   const top = curEl ? curEl.getBoundingClientRect().top - 40 : Infinity
-  return top <= 0
+  return top < 0
 }
 
-export function throttle(fn: (...args: any[]) => void, time = 300) {
-  let oldTime = Date.now()
+export function debounce(fn: (...args: any[]) => void, wait = 300) {
+  let timeout: any
+
   return function (...args: any[]) {
-    const newTime = Date.now()
-    if (newTime - oldTime >= time) {
-      // eslint-disable-next-line no-useless-call
-      fn.apply(null, [...args])
-      oldTime = Date.now()
-    }
+    if (timeout) clearTimeout(timeout) // timeout 不为null
+    timeout = setTimeout(function () {
+      fn.apply(null, args)
+    }, wait)
   }
 }

@@ -3,7 +3,9 @@ import PdfViewer from "../../src/components/index.vue";
 </script>
 
 <template>
-  <PdfViewer source="https://static13.eeo.im/upload/trans/main01/b4/39/1656026/noop/Xtu9OpRYV92dhCvb.pdf" />
+  <PdfViewer :source="{
+    url: 'https://static13.eeo.im/upload/trans/main01/c3/e9/2105528/noop/2F_f8952756-1b73-4da0-b160-ea924339ac57.pdf',
+  }" />
 </template>
 
 

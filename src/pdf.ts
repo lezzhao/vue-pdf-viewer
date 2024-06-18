@@ -100,7 +100,7 @@ export function usePdfViewer(options?: {
     const canvas = document.createElement('canvas')
     canvas.classList.add('pdf-thumb-item')
     const context = canvas.getContext('2d')
-    const viewport = page.getViewport({ scale: 0.34, })
+    const viewport = page.getViewport({ scale: 0.34 })
 
     canvas.width = 100
     canvas.dataset.t_page = `${page.pageNumber}`
@@ -135,15 +135,15 @@ export function usePdfViewer(options?: {
     return canvas
   }
   // render logic
-  const render = async (pdf: PDFDocumentProxy, config: { thumbnail?: boolean } = { thumbnail: false }) => {
-    const { thumbnail } = config
+  const render = async (pdf: PDFDocumentProxy, config: { thumbnail?: boolean, scale?: number } = { thumbnail: false }) => {
+    const { thumbnail, scale = 1 } = config
     const fragment = document.createDocumentFragment()
 
     let _render = thumbnail ? renderThumbnail : renderPage
 
     await Promise.all([...Array(pdf.numPages).keys()].map(async (i) => {
       const page = await pdf.getPage(i + 1)
-      const p = await _render(page)
+      const p = await _render(page, { scale })
       fragment.appendChild(p)
     }))
 
