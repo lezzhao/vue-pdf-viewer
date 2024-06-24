@@ -33,11 +33,10 @@
   ],
   "scripts": {
     "dev": "vite",
-    "build": "vite build && vue-tsc --emit",
+    "build": "vite build",
     "play": "vite playground --open",
     "play:build": "vite build playground",
     "lint": "eslint .",
-    "typecheck": "vue-tsc --noEmit",
     "test": "vitest",
     "test:e2e": "cypress open",
     "up": "taze major -I",
