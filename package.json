@@ -13,7 +13,9 @@
   "keywords": [
     "vue3",
     "pdf",
-    "viewer"
+    "viewer",
+    "component",
+    "library"
   ],
   "exports": {
     ".": {
@@ -43,24 +45,24 @@
     "release": "bumpp --commit --tag --push && pnpm publish"
   },
   "dependencies": {
-    "pdfjs-dist": "^4.3.136",
+    "pdfjs-dist": "^4.3.136"
+  },
+  "peerDependencies": {
     "vue": "^3.4.27"
   },
   "devDependencies": {
-    "@antfu/eslint-config": "^2.18.0",
     "@antfu/ni": "^0.21.12",
     "@types/node": "^20.14.2",
     "@types/pdfjs-dist": "^2.10.378",
     "@vitejs/plugin-vue": "^5.0.4",
     "bumpp": "^9.4.1",
-    "cypress": "^13.11.0",
     "eslint": "^9.4.0",
     "less": "^4.2.0",
     "pnpm": "^9.3.0",
     "taze": "^0.13.8",
     "typescript": "^5.4.5",
     "vite": "^5.2.13",
-    "vitest": "^1.6.0",
-    "vue-tsc": "^2.0.21"
+    "vite-plugin-dts": "^3.9.1",
+    "vue": "^3.4.27"
   }
 }

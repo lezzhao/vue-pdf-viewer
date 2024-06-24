@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import PdfViewer from "../../src/components/index.vue";
+import { PdfViewer } from 'vue-pdf-viewer'
 </script>
 
 <template>
@@ -10,6 +10,7 @@ import PdfViewer from "../../src/components/index.vue";
 
 
 <style lang="less">
+@import url('vue-pdf-viewer/dist/style.css');
 .a {
   color: red;
 }

@@ -13,10 +13,16 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
+    "jsx": "preserve"
   },
   "exclude": [
     "dist",
     "playground",
     "cypress"
-  ]
+  ],
+  "include": [
+    "src/index.ts",
+    "src/**/*.d.ts",
+    "src/**/*.vue"
+  ],
 }
