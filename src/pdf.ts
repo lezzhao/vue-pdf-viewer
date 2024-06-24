@@ -1,4 +1,4 @@
-import { PasswordResponses, getDocument } from 'pdfjs-dist';
+import { PasswordResponses, getDocument, GlobalWorkerOptions } from 'pdfjs-dist';
 import type {
   OnProgressParameters,
   PDFDocumentProxy,
@@ -6,7 +6,6 @@ import type {
 } from 'pdfjs-dist'
 import { PasswordRequestParams, Source, PdfInstance } from './types';
 
-import { GlobalWorkerOptions } from 'pdfjs-dist'
 // @ts-expect-error
 import PdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
 import { addPrintStyles, createPrintIframe, downloadPdf, releaseChildCanvases, scrollToPage } from './utils';
