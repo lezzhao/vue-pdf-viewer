@@ -1,14 +1,14 @@
 {
-  "name": "vue-pdf-viewer",
+  "name": "vue3-pdf-viewer",
   "version": "0.0.1-beta.2",
   "packageManager": "pnpm@9.3.0",
   "description": "pdf viewer in Vue3",
   "author": "lezzhao",
   "license": "MIT",
-  "homepage": "https://github.com/lezzhao/vue-pdf-viewer#readme",
+  "homepage": "https://github.com/lezzhao/vue3-pdf-viewer#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/lezzhao/vue-pdf-viewer.git"
+    "url": "git+https://github.com/lezzhao/vue3-pdf-viewer.git"
   },
   "keywords": [
     "vue3",
