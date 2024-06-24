@@ -156,6 +156,12 @@ onUnmounted(() => {
         scrollContainer.value.removeEventListener('scroll', scrollHandler)
     }
 })
+
+
+defineExpose({
+    print: printHandler,
+    download: downloadHandler
+})
 </script>
 
 <template>
@@ -168,11 +174,36 @@ onUnmounted(() => {
         }">
             <template v-if="info.total">
                 <header class="pdf-header">
-                    <span @click="toggleThumbnail">缩略图切换</span>
-                    <span @click="scaleHandler(true)">放大</span>
-                    <span @click="scaleHandler(false)">缩小</span>
-                    <span @click="downloadHandler()">下载</span>
-                    <span @click="printHandler">打印</span>
+                    <div>
+                        <span @click="toggleThumbnail"><svg xmlns="http://www.w3.org/2000/svg" width="22px" height="22px"
+                                viewBox="0 0 24 24">
+                                <path fill="currentColor"
+                                    d="M4 20q-.825 0-1.412-.587T2 18V6q0-.825.588-1.412T4 4h4v16zm6 0V4h10q.825 0 1.413.588T22 6v12q0 .825-.587 1.413T20 20z" />
+                            </svg></span>
+                        <span @click="scaleHandler(true)"><svg xmlns="http://www.w3.org/2000/svg" width="22px" height="22px"
+                                viewBox="0 0 24 24">
+                                <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                    stroke-width="2" d="M3 10a7 7 0 1 0 14 0a7 7 0 1 0-14 0m4 0h6m-3-3v6m11 8l-6-6" />
+                            </svg></span>
+                        <span @click="scaleHandler(false)"><svg xmlns="http://www.w3.org/2000/svg" width="22px"
+                                height="22px" viewBox="0 0 24 24">
+                                <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                    stroke-width="2" d="m21 21l-6-6m2-5a7 7 0 1 1-14 0a7 7 0 0 1 14 0m-4 0H7" />
+                            </svg></span>
+                    </div>
+                    <div>
+                        <span @click="downloadHandler()">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22px" height="22px" viewBox="0 0 24 24">
+                                <path fill="currentColor"
+                                    d="m12 16l-5-5l1.4-1.45l2.6 2.6V4h2v8.15l2.6-2.6L17 11zm-6 4q-.825 0-1.412-.587T4 18v-3h2v3h12v-3h2v3q0 .825-.587 1.413T18 20z" />
+                            </svg>
+                        </span>
+                        <span @click="printHandler"><svg xmlns="http://www.w3.org/2000/svg" width="22px" height="22px"
+                                viewBox="0 0 24 24">
+                                <path fill="currentColor"
+                                    d="M16 8V5H8v3H6V3h12v5zM4 10h16zm14 2.5q.425 0 .713-.288T19 11.5t-.288-.712T18 10.5t-.712.288T17 11.5t.288.713t.712.287M16 19v-4H8v4zm2 2H6v-4H2v-6q0-1.275.875-2.137T5 8h14q1.275 0 2.138.863T22 11v6h-4zm2-6v-4q0-.425-.288-.712T19 10H5q-.425 0-.712.288T4 11v4h2v-2h12v2z" />
+                            </svg></span>
+                    </div>
                 </header>
                 <section class="pdf-main-container">
                     <section class="pdf-thumbs-container" :style="{
@@ -184,7 +215,7 @@ onUnmounted(() => {
             </template>
             <template v-if="pwdInfo.visible">
                 <div class="pwd-container">
-                    <input type="password" placeholder="please type password" v-model="pwdInfo.pwd" >
+                    <input type="password" placeholder="please type password" v-model="pwdInfo.pwd">
                     <button @click="clickHandler">confirm</button>
                 </div>
             </template>
@@ -226,7 +257,8 @@ body {
         align-items: center;
         height: 40px;
         background-color: #ccc;
-        justify-content: space-evenly;
+        justify-content: space-between;
+        font-size: 24px;
     }
 
     .pdf-main-container {

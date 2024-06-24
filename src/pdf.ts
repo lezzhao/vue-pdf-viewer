@@ -100,9 +100,11 @@ export function usePdfViewer(options?: {
     const canvas = document.createElement('canvas')
     canvas.classList.add('pdf-thumb-item')
     const context = canvas.getContext('2d')
-    const viewport = page.getViewport({ scale: 0.34 })
-
-    canvas.width = 100
+    let viewport = page.getViewport({ scale: 1 })
+    const s = 100 / viewport.width
+    viewport = viewport.clone({ scale: s })
+    canvas.width = viewport.width
+    canvas.height = viewport.height
     canvas.dataset.t_page = `${page.pageNumber}`
     canvas.addEventListener('click', (e) => {
       const target = e.target as HTMLCanvasElement
